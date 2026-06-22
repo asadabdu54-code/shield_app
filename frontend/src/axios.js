@@ -1,10 +1,11 @@
+// src/api.js
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:5000",
+  baseURL: "https://YOUR_BACKEND.onrender.com/api",
 });
 
-// attach token automatically to every request
+// attach JWT token automatically
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("haya_token");
 
