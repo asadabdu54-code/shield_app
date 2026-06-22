@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://YOUR_BACKEND.onrender.com/api",
+  baseURL: "https://shield-app-ahng.onrender.com",
 });
 
 // attach JWT token automatically
