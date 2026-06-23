@@ -22,7 +22,7 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: function (origin, callback) {
+    origin(origin, callback) {
       // Allow Postman, mobile apps, etc.
       if (!origin) {
         return callback(null, true);
@@ -40,9 +40,6 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
-
-// Handle preflight requests
-app.options("*", cors());
 
 /* =========================
    Middleware
@@ -80,7 +77,7 @@ app.get("/", (req, res) => {
 });
 
 /* =========================
-   404
+   404 Handler
 ========================= */
 
 app.use((req, res) => {
@@ -90,7 +87,7 @@ app.use((req, res) => {
 });
 
 /* =========================
-   Database + Server Start
+   Database + Server
 ========================= */
 
 const PORT = process.env.PORT || 5000;

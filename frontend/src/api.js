@@ -1,7 +1,9 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL:
+    import.meta.env.VITE_API_URL ||
+    "https://shield-app-backend.onrender.com/api",
 });
 
 api.interceptors.request.use((config) => {
@@ -19,7 +21,9 @@ api.interceptors.response.use(
   (err) => {
     if (err.response?.status === 401) {
       localStorage.removeItem("haya_token");
+      window.location.href = "/login";
     }
+
     return Promise.reject(err);
   },
 );

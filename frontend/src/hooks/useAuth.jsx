@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+
 import api from "../api";
 
 const AuthContext = createContext(null);
@@ -7,7 +8,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Restore session
+  // Restore login session
   useEffect(() => {
     const token = localStorage.getItem("haya_token");
 
@@ -17,36 +18,43 @@ export function AuthProvider({ children }) {
     }
 
     api
-      .get("/api/auth/me")
-      .then((res) => setUser(res.data.user))
+      .get("/auth/me")
+      .then((res) => {
+        setUser(res.data.user);
+      })
       .catch(() => {
         localStorage.removeItem("haya_token");
+        setUser(null);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   // LOGIN
   async function login(email, password) {
-    const res = await api.post("/api/auth/login", {
+    const res = await api.post("/auth/login", {
       email,
       password,
     });
 
     localStorage.setItem("haya_token", res.data.token);
+
     setUser(res.data.user);
 
     return res.data.user;
   }
 
   // REGISTER
-  async function register(email, password, name) {
-    const res = await api.post("/api/auth/register", {
+  async function register(email, password, name = "") {
+    const res = await api.post("/auth/register", {
       email,
       password,
       name,
     });
 
     localStorage.setItem("haya_token", res.data.token);
+
     setUser(res.data.user);
 
     return res.data.user;
@@ -60,9 +68,10 @@ export function AuthProvider({ children }) {
 
   // UPDATE PROFILE
   async function updateMe(fields) {
-    const res = await api.patch("/api/auth/me", fields);
+    const res = await api.patch("/auth/me", fields);
 
     setUser(res.data.user);
+
     return res.data.user;
   }
 
