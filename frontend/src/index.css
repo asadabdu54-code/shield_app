@@ -43,3 +43,22 @@ input, textarea, select { font-family: inherit; }
 /* Utility */
 .mono { font-family: 'JetBrains Mono', monospace; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+
+/* Animations */
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(79,126,255,0.5); }
+  70%  { box-shadow: 0 0 0 8px rgba(79,126,255,0); }
+  100% { box-shadow: 0 0 0 0 rgba(79,126,255,0); }
+}
+
+/* Home page responsive overrides */
+@media (max-width: 900px) {
+  .home-stats-grid    { grid-template-columns: repeat(2, 1fr) !important; }
+  .home-features-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .home-steps-wrap    { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 600px) {
+  .home-stats-grid    { grid-template-columns: 1fr !important; }
+  .home-features-grid { grid-template-columns: 1fr !important; }
+  .home-steps-wrap    { grid-template-columns: 1fr !important; }
+}
