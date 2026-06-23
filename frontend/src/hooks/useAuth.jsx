@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useState } from "react";
-
 import api from "../api";
 
 const AuthContext = createContext(null);
@@ -8,7 +7,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Restore login session
+  // restore session
   useEffect(() => {
     const token = localStorage.getItem("haya_token");
 
@@ -19,16 +18,9 @@ export function AuthProvider({ children }) {
 
     api
       .get("/auth/me")
-      .then((res) => {
-        setUser(res.data.user);
-      })
-      .catch(() => {
-        localStorage.removeItem("haya_token");
-        setUser(null);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+      .then((res) => setUser(res.data.user))
+      .catch(() => localStorage.removeItem("haya_token"))
+      .finally(() => setLoading(false));
   }, []);
 
   // LOGIN
@@ -39,22 +31,20 @@ export function AuthProvider({ children }) {
     });
 
     localStorage.setItem("haya_token", res.data.token);
-
     setUser(res.data.user);
 
     return res.data.user;
   }
 
   // REGISTER
-  async function register(email, password, name = "") {
+  async function register(email, password, name) {
     const res = await api.post("/auth/register", {
+      name,
       email,
       password,
-      name,
     });
 
     localStorage.setItem("haya_token", res.data.token);
-
     setUser(res.data.user);
 
     return res.data.user;
@@ -69,22 +59,13 @@ export function AuthProvider({ children }) {
   // UPDATE PROFILE
   async function updateMe(fields) {
     const res = await api.patch("/auth/me", fields);
-
     setUser(res.data.user);
-
     return res.data.user;
   }
 
   return (
     <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        login,
-        register,
-        logout,
-        updateMe,
-      }}
+      value={{ user, loading, login, register, logout, updateMe }}
     >
       {children}
     </AuthContext.Provider>

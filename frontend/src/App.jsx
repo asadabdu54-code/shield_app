@@ -1,8 +1,8 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth.jsx";
+import Home from "./pages/Home.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
-import Home from "./pages/Home.jsx";
 import Layout from "./components/Layout.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Blocklist from "./pages/Blocklist.jsx";
@@ -20,8 +20,10 @@ function RequireAuth({ children }) {
           alignItems: "center",
           justifyContent: "center",
           color: "var(--text-muted)",
+          gap: "12px",
         }}
       >
+        <LoadingSpinner />
         Loading…
       </div>
     );
@@ -34,48 +36,51 @@ function GuestOnly({ children }) {
   return user ? <Navigate to="/dashboard" replace /> : children;
 }
 
+function LoadingSpinner() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      style={{ animation: "spin 1s linear infinite" }}
+    >
+      <path d="M21 12a9 9 0 1 1-6.219-8.56" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export default function App() {
   return (
-    <Routes>
-      {/* PUBLIC */}
-      <Route path="/" element={<Home />} />
+    <>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <Routes>
+        {/* Public home page */}
+        <Route path="/" element={<GuestOnly><Home /></GuestOnly>} />
 
-      <Route
-        path="/login"
-        element={
-          <GuestOnly>
-            <Login />
-          </GuestOnly>
-        }
-      />
+        {/* Auth pages */}
+        <Route path="/login"    element={<GuestOnly><Login /></GuestOnly>} />
+        <Route path="/register" element={<GuestOnly><Register /></GuestOnly>} />
 
-      <Route
-        path="/register"
-        element={
-          <GuestOnly>
-            <Register />
-          </GuestOnly>
-        }
-      />
+        {/* Protected app */}
+        <Route path="/dashboard" element={<RequireAuth><Layout /></RequireAuth>}>
+          <Route index element={<Dashboard />} />
+        </Route>
+        <Route path="/blocklist" element={<RequireAuth><Layout /></RequireAuth>}>
+          <Route index element={<Blocklist />} />
+        </Route>
+        <Route path="/reports" element={<RequireAuth><Layout /></RequireAuth>}>
+          <Route index element={<Reports />} />
+        </Route>
+        <Route path="/settings" element={<RequireAuth><Layout /></RequireAuth>}>
+          <Route index element={<Settings />} />
+        </Route>
 
-      {/* PROTECTED APP */}
-      <Route
-        path="/app"
-        element={
-          <RequireAuth>
-            <Layout />
-          </RequireAuth>
-        }
-      >
-        <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="blocklist" element={<Blocklist />} />
-        <Route path="reports" element={<Reports />} />
-        <Route path="settings" element={<Settings />} />
-      </Route>
-
-      {/* CATCH ALL */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
   );
 }

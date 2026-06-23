@@ -10,85 +10,52 @@ const reportsRoutes = require("./routes/reports");
 
 const app = express();
 
-/* =========================
-   CORS
-========================= */
+// CORS — support comma-separated list in CLIENT_ORIGIN env var
+const rawOrigins = (process.env.CLIENT_ORIGIN || "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://shield-app-lovat.vercel.app",
-  "https://shield-app-git-main-shield-app.vercel.app",
+  "http://localhost:4173",
+  ...rawOrigins,
 ];
 
 app.use(
   cors({
-    origin(origin, callback) {
-      // Allow Postman, mobile apps, etc.
-      if (!origin) {
+    origin: function (origin, callback) {
+      // allow server-to-server (no origin) or matching origins
+      if (!origin || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      console.log("Blocked by CORS:", origin);
-      return callback(new Error("Blocked by CORS"));
+      return callback(new Error("Blocked by CORS: " + origin));
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  }),
+  })
 );
-
-/* =========================
-   Middleware
-========================= */
 
 app.use(express.json());
 
-/* =========================
-   Routes
-========================= */
-
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/rules", rulesRoutes);
 app.use("/api/reports", reportsRoutes);
 
-/* =========================
-   Health Check
-========================= */
-
 app.get("/api/health", (req, res) => {
-  res.json({
-    status: "ok",
-    message: "Haya Shield API is running",
-  });
+  res.json({ status: "ok", ts: new Date().toISOString() });
 });
 
-/* =========================
-   Root Route
-========================= */
-
-app.get("/", (req, res) => {
-  res.json({
-    message: "Haya Shield Backend Running",
-  });
-});
-
-/* =========================
-   404 Handler
-========================= */
-
+// 404
 app.use((req, res) => {
-  res.status(404).json({
-    error: "Route not found",
-  });
+  res.status(404).json({ error: "Route not found" });
 });
 
-/* =========================
-   Database + Server
-========================= */
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ error: err.message || "Server error" });
+});
 
 const PORT = process.env.PORT || 5000;
 
@@ -96,9 +63,8 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("MongoDB connected");
-
     app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+      console.log("Server running on port", PORT);
     });
   })
   .catch((err) => {

@@ -1,41 +1,43 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth.jsx';
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth.jsx";
+import { useState } from "react";
 
 const NAV = [
-  { to: '/',          label: 'Dashboard', icon: <GridIcon /> },
-  { to: '/blocklist', label: 'Blocklist',  icon: <ListIcon /> },
-  { to: '/reports',   label: 'Reports',    icon: <ChartIcon /> },
-  { to: '/settings',  label: 'Settings',   icon: <GearIcon /> },
+  { to: "/dashboard", label: "Dashboard", icon: <GridIcon /> },
+  { to: "/blocklist", label: "Blocklist",  icon: <ListIcon /> },
+  { to: "/reports",   label: "Reports",    icon: <ChartIcon /> },
+  { to: "/settings",  label: "Settings",   icon: <GearIcon /> },
 ];
 
 export default function Layout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [logoutHover, setLogoutHover] = useState(false);
 
   function handleLogout() {
     logout();
-    navigate('/login');
+    navigate("/");
   }
 
   const initials = user?.name
-    ? user.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
-    : (user?.email?.[0] ?? '?').toUpperCase();
+    ? user.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
+    : (user?.email?.[0] ?? "?").toUpperCase();
 
   return (
     <div style={styles.shell}>
-      {/* Sidebar */}
       <aside style={styles.sidebar}>
+        {/* Brand */}
         <div style={styles.brand}>
           <ShieldIcon />
           <span style={styles.brandName}>Haya Shield</span>
         </div>
 
+        {/* Nav links */}
         <nav style={styles.nav}>
           {NAV.map(({ to, label, icon }) => (
             <NavLink
               key={to}
               to={to}
-              end={to === '/'}
               style={({ isActive }) => ({
                 ...styles.navItem,
                 ...(isActive ? styles.navItemActive : {}),
@@ -47,19 +49,30 @@ export default function Layout() {
           ))}
         </nav>
 
+        {/* User area */}
         <div style={styles.userArea}>
           <div style={styles.avatar}>{initials}</div>
           <div style={styles.userInfo}>
-            <div style={styles.userName}>{user?.name || 'User'}</div>
+            <div style={styles.userName}>{user?.name || "User"}</div>
             <div style={styles.userEmail}>{user?.email}</div>
           </div>
-          <button onClick={handleLogout} style={styles.logoutBtn} title="Sign out">
+          <button
+            onClick={handleLogout}
+            onMouseEnter={() => setLogoutHover(true)}
+            onMouseLeave={() => setLogoutHover(false)}
+            style={{
+              ...styles.logoutBtn,
+              color: logoutHover ? "var(--red)" : "var(--text-muted)",
+              background: logoutHover ? "var(--red-dim)" : "none",
+            }}
+            title="Sign out"
+          >
             <LogoutIcon />
           </button>
         </div>
       </aside>
 
-      {/* Main */}
+      {/* Main content */}
       <main style={styles.main}>
         <Outlet />
       </main>
@@ -67,19 +80,21 @@ export default function Layout() {
   );
 }
 
-// ── Icons ──────────────────────────────────────────────────────────────────────
-const iconProps = { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' };
+// ── Icons ────────────────────────────────────────────────────────────────────
+const iconProps = {
+  width: 16, height: 16, viewBox: "0 0 24 24", fill: "none",
+  stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round",
+};
 
 function ShieldIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-      <path d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.5C16.5 22.15 20 17.25 20 12V6L12 2z" fill="var(--accent)" opacity=".2"/>
-      <path d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.5C16.5 22.15 20 17.25 20 12V6L12 2z" stroke="var(--accent)" strokeWidth="1.5" strokeLinejoin="round"/>
-      <path d="M9 12l2 2 4-4" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.5C16.5 22.15 20 17.25 20 12V6L12 2z" fill="var(--accent)" opacity=".2" />
+      <path d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.5C16.5 22.15 20 17.25 20 12V6L12 2z" stroke="var(--accent)" strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="M9 12l2 2 4-4" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
-
 function GridIcon() {
   return <svg {...iconProps}><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>;
 }
@@ -96,72 +111,49 @@ function LogoutIcon() {
   return <svg {...iconProps}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>;
 }
 
-// ── Styles ─────────────────────────────────────────────────────────────────────
+// ── Styles ───────────────────────────────────────────────────────────────────
 const styles = {
-  shell: { display: 'flex', height: '100vh', overflow: 'hidden' },
+  shell: { display: "flex", height: "100vh", overflow: "hidden" },
   sidebar: {
-    width: '220px',
+    width: "228px",
     flexShrink: 0,
-    background: 'var(--bg-2)',
-    borderRight: '1px solid var(--border)',
-    display: 'flex',
-    flexDirection: 'column',
-    padding: '20px 12px',
+    background: "var(--bg-2)",
+    borderRight: "1px solid var(--border)",
+    display: "flex",
+    flexDirection: "column",
+    padding: "20px 12px",
   },
-  brand: { display: 'flex', alignItems: 'center', gap: '10px', padding: '4px 8px', marginBottom: '28px' },
-  brandName: { fontWeight: 700, fontSize: '15px', letterSpacing: '-0.02em' },
-  nav: { display: 'flex', flexDirection: 'column', gap: '2px', flex: 1 },
+  brand: {
+    display: "flex", alignItems: "center", gap: "10px",
+    padding: "4px 8px", marginBottom: "28px",
+  },
+  brandName: { fontWeight: 700, fontSize: "15px", letterSpacing: "-0.02em" },
+  nav: { display: "flex", flexDirection: "column", gap: "2px", flex: 1 },
   navItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    padding: '9px 10px',
-    borderRadius: 'var(--radius-sm)',
-    color: 'var(--text-muted)',
-    fontSize: '13.5px',
-    fontWeight: 500,
-    transition: 'all 0.15s',
-    textDecoration: 'none',
+    display: "flex", alignItems: "center", gap: "10px",
+    padding: "9px 10px", borderRadius: "var(--radius-sm)",
+    color: "var(--text-muted)", fontSize: "13.5px", fontWeight: 500,
+    transition: "all 0.15s", textDecoration: "none",
   },
-  navItemActive: {
-    background: 'var(--accent-glow)',
-    color: 'var(--accent)',
-  },
-  navIcon: { display: 'flex', alignItems: 'center', width: '16px' },
+  navItemActive: { background: "var(--accent-glow)", color: "var(--accent)" },
+  navIcon: { display: "flex", alignItems: "center", width: "16px" },
   userArea: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    padding: '10px 8px',
-    borderTop: '1px solid var(--border)',
-    marginTop: '12px',
+    display: "flex", alignItems: "center", gap: "10px",
+    padding: "10px 8px",
+    borderTop: "1px solid var(--border)", marginTop: "12px",
   },
   avatar: {
-    width: '32px',
-    height: '32px',
-    borderRadius: '50%',
-    background: 'var(--accent)',
-    color: '#fff',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '12px',
-    fontWeight: 700,
-    flexShrink: 0,
+    width: "32px", height: "32px", borderRadius: "50%",
+    background: "var(--accent)", color: "#fff",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    fontSize: "12px", fontWeight: 700, flexShrink: 0,
   },
-  userInfo: { flex: 1, overflow: 'hidden' },
-  userName: { fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
-  userEmail: { fontSize: '11px', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+  userInfo: { flex: 1, overflow: "hidden" },
+  userName: { fontSize: "13px", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
+  userEmail: { fontSize: "11px", color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
   logoutBtn: {
-    background: 'none',
-    border: 'none',
-    color: 'var(--text-muted)',
-    display: 'flex',
-    alignItems: 'center',
-    padding: '4px',
-    borderRadius: '4px',
-    transition: 'color 0.15s',
-    flexShrink: 0,
+    border: "none", display: "flex", alignItems: "center",
+    padding: "6px", borderRadius: "6px", transition: "all 0.15s", flexShrink: 0,
   },
-  main: { flex: 1, overflow: 'auto', padding: '32px', background: 'var(--bg)' },
+  main: { flex: 1, overflow: "auto", padding: "32px 36px", background: "var(--bg)" },
 };
