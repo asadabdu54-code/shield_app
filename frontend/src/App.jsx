@@ -37,10 +37,9 @@ function GuestOnly({ children }) {
 export default function App() {
   return (
     <Routes>
-      {/* Public landing page */}
-      <Route path="/home" element={<Home />} />
+      {/* PUBLIC */}
+      <Route path="/" element={<Home />} />
 
-      {/* Auth pages — redirect logged-in users to dashboard */}
       <Route
         path="/login"
         element={
@@ -49,6 +48,7 @@ export default function App() {
           </GuestOnly>
         }
       />
+
       <Route
         path="/register"
         element={
@@ -58,9 +58,9 @@ export default function App() {
         }
       />
 
-      {/* Protected app shell */}
+      {/* PROTECTED APP */}
       <Route
-        path="/"
+        path="/app"
         element={
           <RequireAuth>
             <Layout />
@@ -74,8 +74,8 @@ export default function App() {
         <Route path="settings" element={<Settings />} />
       </Route>
 
-      {/* Catch-all → landing */}
-      <Route path="*" element={<Navigate to="/home" replace />} />
+      {/* CATCH ALL */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
