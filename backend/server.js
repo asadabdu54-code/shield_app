@@ -14,37 +14,33 @@ const app = express();
 /*                                   CORS                                     */
 /* -------------------------------------------------------------------------- */
 
-const rawOrigins = (process.env.CLIENT_ORIGIN || "")
-  .split(",")
-  .map((s) => s.trim())
-  .filter(Boolean);
-
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:4173",
-  "https://shield-app-lovat.vercel.app",
-  ...rawOrigins,
-];
-
-console.log("Allowed Origins:", allowedOrigins);
-
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow Postman, server-to-server requests, health checks, etc.
+    // Allow Postman, Render health checks, server-to-server requests
     if (!origin) {
       return callback(null, true);
     }
 
-    if (allowedOrigins.includes(origin)) {
+    const allowedOrigins = [
+      "http://localhost:5173",
+      "http://localhost:4173",
+      "https://shield-app-lovat.vercel.app",
+    ];
+
+    // Allow localhost, production Vercel, and all Vercel preview deployments
+    if (allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
       return callback(null, true);
     }
 
     console.log("Blocked Origin:", origin);
 
-    return callback(new Error(`CORS blocked for origin: ${origin}`), false);
+    return callback(new Error(`Blocked by CORS: ${origin}`));
   },
+
   credentials: true,
+
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+
   allowedHeaders: [
     "Origin",
     "X-Requested-With",
@@ -55,7 +51,6 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
 
 /* -------------------------------------------------------------------------- */
 /*                                Middleware                                  */
